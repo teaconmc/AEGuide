@@ -23,10 +23,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
-
-import appeng.blockentity.AEBaseBlockEntity;
 import appeng.util.Platform;
 
 public final class AELog {
@@ -209,20 +205,6 @@ public final class AELog {
     //
     // Specialized handlers
     //
-
-    /**
-     * Logging of block updates.
-     * <p>
-     * Off by default, can be enabled inside the configuration file.
-     *
-     * @see AELog#log(Level, String, Object...)
-     */
-    public static void blockUpdate(BlockPos pos, BlockState currentState,
-            BlockState newState, AEBaseBlockEntity blockEntity) {
-        if (AEConfig.instance().isBlockUpdateLogEnabled()) {
-            info(BLOCK_UPDATE, blockEntity.getClass().getName(), pos, currentState, newState);
-        }
-    }
 
     /**
      * Use to check for an enabled crafting log.

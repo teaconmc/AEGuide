@@ -60,30 +60,18 @@ import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-import appeng.api.config.AccessRestriction;
-import appeng.api.config.PowerUnit;
-import appeng.api.config.SortOrder;
-import appeng.api.implementations.items.IAEItemPowerStorage;
-import appeng.api.util.DimensionalBlockPos;
-import appeng.core.AEConfig;
 import appeng.core.AELog;
-import appeng.hooks.VisualStateSaving;
-import appeng.hooks.ticking.TickHandler;
-import appeng.util.helpers.P2PHelper;
 
 public class Platform {
 
     @VisibleForTesting
     public static ThreadGroup serverThreadGroup = SidedThreadGroups.SERVER;
 
-    private static final P2PHelper P2P_HELPER = new P2PHelper();
-
     public static final Direction[] DIRECTIONS_WITH_NULL = new Direction[] { Direction.DOWN, Direction.UP,
             Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, null };
 
     /**
-     * Class of the Create Ponder Level. Enables {@link VisualStateSaving} if a block entity is attached to a Ponder
-     * level.
+     * Class of the Create Ponder Level.
      */
     @Nullable
     private static final Class<?> ponderLevelClass = findPonderLevelClass(
@@ -122,10 +110,6 @@ public class Platform {
         }
     }
 
-    public static P2PHelper p2p() {
-        return P2P_HELPER;
-    }
-
     /**
      * This displays the value for encoded longs ( double *100 )
      *
@@ -138,11 +122,9 @@ public class Platform {
     }
 
     public static String formatPower(double p, boolean isRate) {
-        var displayUnits = AEConfig.instance().getSelectedEnergyUnit();
-        p = PowerUnit.AE.convertTo(displayUnits, p);
-
+        ;
         final String[] preFixes = { "k", "M", "G", "T", "P", "T", "P", "E", "Z", "Y" };
-        var unitName = displayUnits.getSymbolName();
+        var unitName = "ME";
 
         String level = "";
         int offset = 0;
@@ -205,13 +187,6 @@ public class Platform {
         return Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER;
     }
 
-    public static boolean hasPermissions(DimensionalBlockPos dc, Player player) {
-        if (!dc.isInWorld(player.level())) {
-            return false;
-        }
-        return player.level().mayInteract(player, dc.getPos());
-    }
-
     /*
      * Generates Item entities in the level similar to how items are generally dropped.
      */
@@ -259,10 +234,6 @@ public class Platform {
         if (i.isEmpty()) {
             return false;
         }
-        if (i.getItem() instanceof IAEItemPowerStorage powerStorage) {
-            return powerStorage.getAEMaxPower(i) > 0 &&
-                    powerStorage.getPowerFlow(i) != AccessRestriction.READ;
-        }
         return false;
     }
 
@@ -302,16 +273,6 @@ public class Platform {
         player.moveTo(blockEntity.getBlockPos().getX() + 0.5, blockEntity.getBlockPos().getY() + 0.5,
                 blockEntity.getBlockPos().getZ() + 0.5,
                 yaw, pitch);
-    }
-
-    public static void notifyBlocksOfNeighbors(Level level, BlockPos pos) {
-        if (level != null && !level.isClientSide) {
-            TickHandler.instance().addCallable(level, new BlockUpdate(pos));
-        }
-    }
-
-    public static boolean isSortOrderAvailable(SortOrder order) {
-        return true;
     }
 
     /**

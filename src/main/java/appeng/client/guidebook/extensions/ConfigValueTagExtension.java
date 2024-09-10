@@ -7,7 +7,6 @@ import java.util.function.Supplier;
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.FlowTagCompiler;
 import appeng.client.guidebook.document.flow.LytFlowParent;
-import appeng.core.AEConfig;
 import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
 
 /**
@@ -16,7 +15,7 @@ import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
 public class ConfigValueTagExtension extends FlowTagCompiler {
     public static final Map<String, Supplier<String>> CONFIG_VALUES = Map.of(
             "crystalResonanceGeneratorRate",
-            () -> String.valueOf(AEConfig.instance().getCrystalResonanceGeneratorRate()));
+            () -> String.valueOf(114514));
 
     @Override
     public Set<String> getTagNames() {

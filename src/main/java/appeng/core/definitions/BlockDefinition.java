@@ -66,10 +66,6 @@ public class BlockDefinition<T extends Block> implements ItemLike {
         return item.genericStack(stackSize);
     }
 
-    public boolean is(ItemStack comparableStack) {
-        return item.is(comparableStack);
-    }
-
     public boolean is(AEKey key) {
         return item.is(key);
     }

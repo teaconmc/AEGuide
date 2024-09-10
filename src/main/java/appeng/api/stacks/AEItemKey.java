@@ -28,7 +28,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
-import appeng.api.storage.AEKeyFilter;
 import appeng.core.AELog;
 
 public final class AEItemKey extends AEKey {
@@ -77,10 +76,6 @@ public final class AEItemKey extends AEKey {
 
     public static boolean is(AEKey what) {
         return what instanceof AEItemKey;
-    }
-
-    public static AEKeyFilter filter() {
-        return AEItemKey::is;
     }
 
     @Override

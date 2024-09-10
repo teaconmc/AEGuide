@@ -17,15 +17,11 @@ import net.minecraft.world.item.crafting.RecipeType;
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.block.LytBlock;
 import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.document.block.recipes.LytChargerRecipe;
 import appeng.client.guidebook.document.block.recipes.LytCraftingRecipe;
-import appeng.client.guidebook.document.block.recipes.LytInscriberRecipe;
 import appeng.client.guidebook.document.block.recipes.LytSmeltingRecipe;
 import appeng.client.guidebook.document.block.recipes.LytSmithingRecipe;
-import appeng.client.guidebook.document.block.recipes.LytTransformRecipe;
 import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
 import appeng.libs.mdast.model.MdAstNode;
-import appeng.recipes.AERecipeTypes;
 import appeng.util.Platform;
 
 /**
@@ -35,10 +31,7 @@ public class RecipeCompiler extends BlockTagCompiler {
     private final List<RecipeTypeMapping<?, ?>> mappings = List.of(
             new RecipeTypeMapping<>(RecipeType.CRAFTING, LytCraftingRecipe::new),
             new RecipeTypeMapping<>(RecipeType.SMELTING, LytSmeltingRecipe::new),
-            new RecipeTypeMapping<>(RecipeType.SMITHING, LytSmithingRecipe::new),
-            new RecipeTypeMapping<>(AERecipeTypes.INSCRIBER, LytInscriberRecipe::new),
-            new RecipeTypeMapping<>(AERecipeTypes.CHARGER, LytChargerRecipe::new),
-            new RecipeTypeMapping<>(AERecipeTypes.TRANSFORM, LytTransformRecipe::new));
+            new RecipeTypeMapping<>(RecipeType.SMITHING, LytSmithingRecipe::new));
 
     @Override
     public Set<String> getTagNames() {

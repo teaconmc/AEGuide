@@ -37,7 +37,6 @@ import appeng.client.guidebook.scene.annotation.InWorldBoxAnnotation;
 import appeng.client.guidebook.scene.annotation.SceneAnnotation;
 import appeng.client.guidebook.screen.GuideIconButton;
 import appeng.client.guidebook.screen.GuideScreen;
-import appeng.core.AEConfig;
 import appeng.siteexport.OffScreenRenderer;
 
 /**
@@ -338,7 +337,7 @@ public class LytGuidebookScene extends LytBox {
          * Render one in 2D space at 0,0. And render one in 3D space at 0,0,0.
          */
         private void renderDebugCrosshairs() {
-            if (!AEConfig.instance().isShowDebugGuiOverlays()) {
+            if (!Minecraft.getInstance().getDebugOverlay().showDebugScreen()) {
                 return;
             }
 

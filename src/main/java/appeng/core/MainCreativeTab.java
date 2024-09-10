@@ -30,9 +30,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
 import appeng.api.ids.AECreativeTabIds;
-import appeng.block.AEBaseBlock;
-import appeng.block.AEBaseBlockItem;
-import appeng.core.definitions.AEBlocks;
+import appeng.core.definitions.AEItems;
 import appeng.core.definitions.ItemDefinition;
 import appeng.core.localization.GuiText;
 import appeng.items.AEBaseItem;
@@ -46,7 +44,7 @@ public final class MainCreativeTab {
     public static void init(Registry<CreativeModeTab> registry) {
         var tab = CreativeModeTab.builder()
                 .title(GuiText.CreativeTab.text())
-                .icon(() -> AEBlocks.CONTROLLER.stack(1))
+                .icon(() -> AEItems.TABLET.stack(1))
                 .displayItems(MainCreativeTab::buildDisplayItems)
                 .build();
         Registry.register(registry, AECreativeTabIds.MAIN, tab);
@@ -72,10 +70,7 @@ public final class MainCreativeTab {
             var item = itemDef.asItem();
 
             // For block items, the block controls the creative tab
-            if (item instanceof AEBaseBlockItem baseItem
-                    && baseItem.getBlock() instanceof AEBaseBlock baseBlock) {
-                baseBlock.addToMainCreativeTab(itemDisplayParameters, output);
-            } else if (item instanceof AEBaseItem baseItem) {
+            if (item instanceof AEBaseItem baseItem) {
                 baseItem.addToMainCreativeTab(itemDisplayParameters, output);
             } else {
                 output.accept(itemDef);

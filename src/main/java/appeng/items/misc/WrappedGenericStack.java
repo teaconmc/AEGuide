@@ -30,9 +30,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import appeng.api.behaviors.ContainerItemStrategies;
-import appeng.api.config.Actionable;
-import appeng.api.ids.AEComponents;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.core.definitions.AEItems;
@@ -48,7 +45,6 @@ public class WrappedGenericStack extends AEBaseItem {
         Objects.requireNonNull(stack, "stack");
         var item = AEItems.WRAPPED_GENERIC_STACK.asItem();
         var result = new ItemStack(item);
-        result.set(AEComponents.WRAPPED_STACK, stack);
         return result;
     }
 
@@ -68,13 +64,7 @@ public class WrappedGenericStack extends AEBaseItem {
             return null;
         }
 
-        var wrapped = stack.get(AEComponents.WRAPPED_STACK);
-
-        if (wrapped == null) {
-            return null;
-        }
-
-        return wrapped.what();
+        return null;
     }
 
     public long unwrapAmount(ItemStack stack) {
@@ -82,13 +72,7 @@ public class WrappedGenericStack extends AEBaseItem {
             return 0;
         }
 
-        var wrapped = stack.get(AEComponents.WRAPPED_STACK);
-
-        if (wrapped == null) {
-            return 0;
-        }
-
-        return wrapped.amount();
+        return 0;
     }
 
     /**
@@ -101,27 +85,6 @@ public class WrappedGenericStack extends AEBaseItem {
             // We need the opened menu since we're ignoring slotAccess due to no helper being available for it in the
             // transfer API
             return true;
-        }
-
-        // Allow picking up fluids items with a fluid container, this is a special case for fluids
-        var what = unwrapWhat(itemInSlot);
-        if (clickAction == ClickAction.PRIMARY) {
-            var heldContainer = ContainerItemStrategies.findCarriedContextForKey(what, player, player.containerMenu);
-            if (heldContainer != null) {
-                long amount = unwrapAmount(itemInSlot);
-                long inserted = heldContainer.insert(what, amount, Actionable.MODULATE);
-
-                // Check client to avoid duplicate sounds in singleplayer
-                if (player.level().isClientSide) {
-                    heldContainer.playFillSound(player, what);
-                }
-
-                if (inserted >= amount) {
-                    slot.set(ItemStack.EMPTY);
-                } else {
-                    slot.set(wrap(what, amount - inserted));
-                }
-            }
         }
 
         // Generally disallow picking this up

@@ -44,7 +44,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 
-import appeng.api.storage.AEKeyFilter;
 import appeng.core.AELog;
 import appeng.core.AppEng;
 import appeng.util.ReadableNumberConverter;
@@ -63,14 +62,12 @@ public abstract class AEKeyType {
 
     private final ResourceLocation id;
     private final Class<? extends AEKey> keyClass;
-    private final AEKeyFilter filter;
     private final Component description;
 
     public AEKeyType(ResourceLocation id, Class<? extends AEKey> keyClass, Component description) {
         Preconditions.checkArgument(!keyClass.equals(AEKey.class), "Can't register a key type for AEKey itself");
         this.id = id;
         this.keyClass = keyClass;
-        this.filter = what -> what.getType() == this;
         this.description = description;
     }
 
@@ -185,13 +182,6 @@ public abstract class AEKeyType {
      */
     public boolean supportsFuzzyRangeSearch() {
         return false;
-    }
-
-    /**
-     * @return A filter matching all keys of this type.
-     */
-    public final AEKeyFilter filter() {
-        return filter;
     }
 
     @Override

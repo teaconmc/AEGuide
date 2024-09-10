@@ -27,7 +27,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-import appeng.api.storage.AEKeyFilter;
 import appeng.core.AELog;
 
 public final class AEFluidKey extends AEKey {
@@ -74,10 +73,6 @@ public final class AEFluidKey extends AEKey {
 
     public static boolean is(AEKey what) {
         return what instanceof AEFluidKey;
-    }
-
-    public static AEKeyFilter filter() {
-        return AEFluidKey::is;
     }
 
     public boolean matches(FluidStack variant) {

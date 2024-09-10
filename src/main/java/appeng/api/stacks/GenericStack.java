@@ -6,7 +6,6 @@ import java.util.Objects;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -22,10 +21,8 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-import appeng.api.ids.AEComponents;
 import appeng.core.definitions.AEItems;
 import appeng.items.misc.WrappedGenericStack;
 
@@ -57,13 +54,6 @@ public record GenericStack(AEKey what, long amount) {
                 DataResult<Pair<GenericStack, T>> a) {
             if (a instanceof DataResult.Error<Pair<GenericStack, T>> error) {
                 var missingContent = AEItems.MISSING_CONTENT.stack();
-                var convert = Dynamic.convert(ops, NbtOps.INSTANCE, input);
-                if (convert instanceof CompoundTag compoundTag) {
-                    missingContent.set(AEComponents.MISSING_CONTENT_ITEMSTACK_DATA, CustomData.of(compoundTag));
-                }
-                LOG.error("Failed to deserialize GenericStack {}: {}", input, error.message());
-                missingContent.set(AEComponents.MISSING_CONTENT_ERROR, error.message());
-
                 var replacement = new GenericStack(AEItemKey.of(missingContent), 1);
 
                 return DataResult.success(
@@ -77,27 +67,6 @@ public record GenericStack(AEKey what, long amount) {
 
         @Override
         public <T> DataResult<T> coApply(DynamicOps<T> ops, GenericStack input, DataResult<T> t) {
-            // When the serialization result failed, we write a missing content item instead
-            // this one will NOT be recoverable
-            if (t instanceof DataResult.Error<T> error) {
-                var missingContent = AEItems.MISSING_CONTENT.stack();
-                LOG.error("Failed to serialize GenericStack {}: {}", input, error.message());
-                missingContent.set(AEComponents.MISSING_CONTENT_ERROR, error.message());
-
-                var replacement = new GenericStack(AEItemKey.of(missingContent), 1);
-                return CODEC.encodeStart(ops, replacement).setLifecycle(t.lifecycle());
-            }
-
-            // When the input is a MISSING_CONTENT item and has the original data attached,
-            // we write that back.
-            if (input.what() instanceof AEItemKey itemKey && itemKey.is(AEItems.MISSING_CONTENT)) {
-                var originalData = itemKey.get(AEComponents.MISSING_CONTENT_ITEMSTACK_DATA);
-                if (originalData != null) {
-                    return DataResult.success(Dynamic.convert(NbtOps.INSTANCE, ops, originalData.getUnsafe()),
-                            t.lifecycle());
-                }
-            }
-
             return t;
         }
     };

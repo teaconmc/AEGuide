@@ -1,19 +1,16 @@
 modLoader="javafml"
 loaderVersion="[1,)"
-issueTrackerURL="https://github.com/AppliedEnergistics/Applied-Energistics-2/issues"
-displayURL="https://github.com/AppliedEnergistics/Applied-Energistics-2"
+issueTrackerURL="https://github.com/zbx1425/AEGuide/issues"
+displayURL="https://github.com/zbx1425/AEGuide"
 logoFile="logo.png"
-authors="TeamAppliedEnergistics"
+authors="TeamAppliedEnergistics, Zbx1425"
 license="See GitHub repository for details"
 
 [[mods]]
 modId="ae2"
 version="0.0.0"
-displayName="Applied Energistics 2"
-description="A Mod about Matter, Energy and using them to conquer the world.."
-
-[[mixins]]
-config="ae2.mixins.json"
+displayName="AEGuide"
+description="The guide book from Applied Energistics 2."
 
 [[dependencies.ae2]]
     modId="neoforge"
@@ -27,26 +24,6 @@ config="ae2.mixins.json"
     type="REQUIRED"
     versionRange="${minecraft_version}"
     ordering="NONE"
-    side="BOTH"
-
-[[dependencies.ae2]]
-    modId="emi"
-    type="OPTIONAL"
-    ordering="AFTER"
-    side="BOTH"
-
-[[dependencies.ae2]]
-    modId="theoneprobe"
-    type="OPTIONAL"
-    versionRange="${top_version}"
-    ordering="AFTER"
-    side="BOTH"
-
-[[dependencies.ae2]]
-    modId="jade"
-    type="OPTIONAL"
-    versionRange="${jade_version}"
-    ordering="AFTER"
     side="BOTH"
 
 # VanillaFix caused us grief in the past

@@ -35,17 +35,12 @@ plugins {
 apply plugin: ProjectDefaultsPlugin
 
 base {
-    archivesName = "appliedenergistics2"
+    archivesName = "aeguide"
 }
 
 sourceSets {
     main {
-        java {
-            srcDir 'src/main/flatbuffers/generated'
-        }
-        resources {
-            srcDir 'src/generated/resources'
-        }
+
     }
     buildtools
 }
@@ -72,7 +67,6 @@ dependencies {
     shaded project(path: ':libs:markdown', configuration: "archives")
     shaded "io.methvin:directory-watcher:${directory_watcher_version}"
     shaded "org.yaml:snakeyaml:${snakeyaml_version}"
-    shaded "com.google.flatbuffers:flatbuffers-java:${flatbuffers_version}"
 
     implementation(project(':libs:markdown')) {
         transitive = false
@@ -85,60 +79,8 @@ dependencies {
     implementation("org.yaml:snakeyaml:${snakeyaml_version}") {
         transitive = false
     }
-    implementation("com.google.flatbuffers:flatbuffers-java:${flatbuffers_version}") {
-        transitive = false
-    }
     // Used for the guide export
     guideExportOnly("org.bytedeco:ffmpeg-platform:${ffmpeg_version}")
-
-    // compile against provided APIs
-    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
-    compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
-    compileOnly "mcp.mobius.waila:wthit-api:neo-${project.wthit_version}"
-    compileOnly "curse.maven:jade-324717:${project.jade_file_id}"
-    compileOnly "mcjty.theoneprobe:theoneprobe:${project.top_version}"
-
-    switch (project.runtime_itemlist_mod) {
-        case "emi":
-            localRuntimeOnly "dev.emi:emi-neoforge:${emi_version}"
-            break
-        case "rei":
-            localRuntimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}"
-            break
-    }
-
-    switch (project.runtime_tooltip_mod) {
-        case "wthit":
-            localRuntimeOnly "mcp.mobius.waila:wthit:neo-${project.wthit_version}"
-            break
-        case "jade":
-            localRuntimeOnly "curse.maven:jade-324717:${project.jade_file_id}"
-            break
-        case "top":
-            localRuntimeOnly "mcjty.theoneprobe:theoneprobe:${project.top_version}"
-            break
-    }
-
-    if (project.runtime_curio == "true") {
-        localRuntimeOnly("top.theillusivec4.curios:curios-neoforge:${project.curios_version}")
-    }
-
-    // Athena
-    if (project.runtime_athena == "true") {
-        localRuntimeOnly("curse.maven:athena-841890:${project.athena_file_id}")
-    }
-
-    // unit test dependencies
-    testImplementation(platform("org.junit:junit-bom:${project.junit_version}"))
-    testImplementation(platform("org.assertj:assertj-bom:${project.assertj_version}"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testImplementation("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.assertj:assertj-core")
-    testImplementation("com.google.guava:guava-testlib:21.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
-    testImplementation("net.neoforged:testframework:${project.neoforge_version}")
 
     compileOnly 'org.apache.commons:commons-configuration2:2.9.0'
 
@@ -169,13 +111,6 @@ if (ext.tag) {
 }
 
 tasks.register("printProjectVersion", PrintProjectVersion.class);
-
-test {
-    useJUnitPlatform()
-
-    // Might not need this anymore...
-    systemProperty "guideDev.ae2guide.sources", file("guidebook").absolutePath
-}
 
 dependencies {
     buildtoolsImplementation 'de.siegmar:fastcsv:2.1.0'
@@ -216,16 +151,6 @@ neoForge {
                     "guideDev.ae2guide.sources": file("guidebook").absolutePath,
             ]
         }
-        gametestWorld {
-            client()
-            programArguments = [
-                    "--username", "AE2Dev", "--quickPlaySingleplayer", "GametestWorld"
-            ]
-            systemProperties = [
-                    "appeng.tests"             : "true",
-                    "guideDev.ae2guide.sources": file("guidebook").absolutePath,
-            ]
-        }
         guide {
             client()
             systemProperties = [
@@ -254,16 +179,6 @@ neoForge {
                     "appeng.version"              : project.version
             ]
         }
-        // Use to run the tests
-        gametest {
-            type = "gameTestServer"
-            gameDirectory = project.file("build/gametest")
-        }
-    }
-
-    unitTest {
-        enable()
-        testedMod = mods.ae2
     }
 }
 
@@ -272,9 +187,7 @@ neoForge {
 Map<String, String> expansionVariables = [
         "project_version": project.version,
         'minecraft_version': project.minecraft_version_range,
-        'neoforge_version': project.neoforge_version_range,
-        'top_version': project.top_version_range,
-        'jade_version': project.jade_version_range
+        'neoforge_version': project.neoforge_version_range
 ]
 
 processResources {
@@ -363,7 +276,7 @@ artifacts {
 publishing {
     publications {
         maven(MavenPublication) {
-            artifactId = "appliedenergistics2"
+            artifactId = "aeguide"
             version = project.version
 
             artifact shadowJar
@@ -417,120 +330,5 @@ spotless {
         addStep(biomeConfig.createStep())
         indentWithSpaces(2)
         endWithNewline()
-    }
-}
-
-////////////////
-// Crowdin
-tasks.register('uploadToCrowdin', JavaExec) {
-    classpath = sourceSets.buildtools.runtimeClasspath
-    mainClass = 'Crowdin'
-    args 'upload_source'
-    workingDir "."
-}
-tasks.register('uploadTranslations', JavaExec) {
-    classpath = sourceSets.buildtools.runtimeClasspath
-    mainClass = 'Crowdin'
-    args 'upload_translations'
-    workingDir "."
-}
-tasks.register('downloadFromCrowdin', JavaExec) {
-    classpath = sourceSets.buildtools.runtimeClasspath
-    mainClass = 'Crowdin'
-    args 'update_translations'
-    workingDir "."
-}
-
-check.dependsOn tasks.register('validateResources', JavaExec) {
-    group = "verification"
-    classpath = sourceSets.buildtools.runtimeClasspath
-    mainClass = 'ValidateResourceIds'
-    workingDir "."
-    args "guidebook"
-    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
-}
-
-/**
- * This task download the FlatBuffers compiler suitable for the current platform.
- */
-tasks.register('downloadFlatbufferCompiler', Download) {
-    var os = System.getProperty("os.name").toLowerCase(Locale.ROOT)
-    var arch = System.getProperty("os.arch")
-    if (os.startsWith("windows")) {
-        src "https://github.com/google/flatbuffers/releases/download/v${flatbuffers_version}/Windows.flatc.binary.zip"
-    } else if (os.startsWith("mac")) {
-        if (arch == "aarch64") {
-            src "https://github.com/google/flatbuffers/releases/download/v${flatbuffers_version}/Mac.flatc.binary.zip"
-        } else if (arch == "amd64") {
-            src "https://github.com/google/flatbuffers/releases/download/v${flatbuffers_version}/MacIntel.flatc.binary.zip"
-        } else {
-            throw new GradleException("Unknown Mac architecture: $arch")
-        }
-    } else if (os.startsWith("linux")) {
-        src "https://github.com/google/flatbuffers/releases/download/v${flatbuffers_version}/Linux.flatc.binary.clang++-12.zip"
-    } else {
-        throw new GradleException("Unknown OS: $os")
-    }
-    onlyIfModified true
-    dest layout.buildDirectory.file("flatc.zip")
-}
-
-tasks.register('downloadAndUnzipFlatbufferCompiler', Copy) {
-    dependsOn downloadFlatbufferCompiler
-    from zipTree(downloadFlatbufferCompiler.dest)
-    into "${project.buildDir}/flatbuffers-bin"
-}
-/**
- * Update the generated Java Code for our scene export schema.
- * The code is checked in so this only needs to be run when the schema changes.
- */
-tasks.register('updateFlatbufferSources', Exec) {
-    group 'build'
-    dependsOn downloadAndUnzipFlatbufferCompiler
-    workingDir project.projectDir
-    commandLine "${project.buildDir}/flatbuffers-bin/flatc",
-            "--gen-mutable",
-            "--java-package-prefix", "appeng.flatbuffers",
-            "--gen-generated",
-            "--java",
-            "-o",
-            "${project.projectDir}/src/main/flatbuffers/generated",
-            "${project.projectDir}/src/main/flatbuffers/scene.fbs"
-
-    doFirst {
-        file("${project.projectDir}/src/main/flatbuffers/generated").deleteDir()
-    }
-    doLast {
-    }
-    doLast {
-        // sadly flatc uses an outdated annotation
-        def folder = file("${project.projectDir}/src/main/flatbuffers/generated")
-        folder.eachFileRecurse(groovy.io.FileType.FILES) { file ->
-            String content = file.text
-            if (content.contains('@javax.annotation.Generated')) {
-                content = content.replace('@javax.annotation.Generated', '@javax.annotation.processing.Generated')
-                file.write(content)
-            }
-        }
-    }
-}
-
-/**
- * Generate the TypeScript sources for our schema. The sources are manually copied
- * over to the website repository.
- */
-tasks.register('updateFlatbufferTypescriptSources', Exec) {
-    group 'build'
-    dependsOn downloadAndUnzipFlatbufferCompiler
-    workingDir project.projectDir
-    commandLine "${project.buildDir}/flatbuffers-bin/flatc",
-            "--ts-flat-files",
-            "--ts",
-            "-o",
-            "${project.buildDir}/scene-ts",
-            "${project.projectDir}/src/main/flatbuffers/scene.fbs"
-
-    doFirst {
-        file("${project.buildDir}/scene-ts").deleteDir()
     }
 }

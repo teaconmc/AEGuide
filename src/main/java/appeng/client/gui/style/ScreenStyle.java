@@ -64,11 +64,6 @@ public class ScreenStyle {
     private String helpTopic;
 
     /**
-     * Positioning information for groups of slots.
-     */
-    private final Map<String, SlotPosition> slots = new HashMap<>();
-
-    /**
      * Various text-labels positioned on the screen.
      */
     private final Map<String, Text> text = new HashMap<>();
@@ -104,10 +99,6 @@ public class ScreenStyle {
 
     public Color getColor(PaletteColor color) {
         return palette.get(color);
-    }
-
-    public Map<String, SlotPosition> getSlots() {
-        return slots;
     }
 
     public Map<String, Text> getText() {

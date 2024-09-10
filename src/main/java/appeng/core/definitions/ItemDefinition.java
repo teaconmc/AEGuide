@@ -30,7 +30,6 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
-import appeng.util.helpers.ItemComparisonHelper;
 
 public class ItemDefinition<T extends Item> implements ItemLike, Supplier<T> {
     private final String englishName;
@@ -63,27 +62,6 @@ public class ItemDefinition<T extends Item> implements ItemLike, Supplier<T> {
 
     public Holder<Item> holder() {
         return item;
-    }
-
-    /**
-     * Compare {@link ItemStack} with this
-     *
-     * @param comparableStack compared item
-     * @return true if the item stack is a matching item.
-     */
-    @Deprecated(forRemoval = true, since = "1.21")
-    public final boolean isSameAs(ItemStack comparableStack) {
-        return is(comparableStack);
-    }
-
-    /**
-     * Compare {@link ItemStack} with this
-     *
-     * @param comparableStack compared item
-     * @return true if the item stack is a matching item.
-     */
-    public final boolean is(ItemStack comparableStack) {
-        return ItemComparisonHelper.isEqualItemType(comparableStack, this.stack());
     }
 
     /**

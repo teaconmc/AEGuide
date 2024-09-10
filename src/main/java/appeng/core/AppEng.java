@@ -30,10 +30,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 
 import appeng.api.ids.AEConstants;
-import appeng.api.parts.CableRenderMode;
-import appeng.client.EffectType;
 import appeng.client.guidebook.PageAnchor;
-import appeng.core.network.ClientboundPacket;
 
 public interface AppEng {
 
@@ -60,12 +57,6 @@ public interface AppEng {
      */
     Collection<ServerPlayer> getPlayers();
 
-    void sendToAllNearExcept(Player p, double x, double y, double z, double dist, Level level,
-            ClientboundPacket packet);
-
-    void spawnEffect(EffectType effect, Level level, double posX, double posY,
-            double posZ, Object o);
-
     /**
      * Sets the player that is currently interacting with a cable or part attached to a cable. This will return that
      * player's cable render mode from calls to {@link #getCableRenderMode()}, until another player or null is set.
@@ -73,8 +64,6 @@ public interface AppEng {
      * @param player Null to revert to the default cable render mode.
      */
     void setPartInteractionPlayer(Player player);
-
-    CableRenderMode getCableRenderMode();
 
     /**
      * Can be used to get the current level the client is in.
@@ -92,11 +81,6 @@ public interface AppEng {
      */
     @Nullable
     MinecraftServer getCurrentServer();
-
-    /**
-     * registers Hotkeys for {@link appeng.hotkeys.HotkeyActions}
-     */
-    void registerHotkey(String id);
 
     /**
      * Opens the guidebook (if this is a client) on the last opened page, or the given initial page.

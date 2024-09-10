@@ -26,11 +26,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
-import appeng.api.config.FuzzyMode;
-import appeng.api.ids.AEComponents;
 import appeng.core.AELog;
 import appeng.core.definitions.AEItems;
 
@@ -57,12 +54,6 @@ public abstract class AEKey {
                 public <T> DataResult<AEKey> apply(DynamicOps<T> ops, MapLike<T> input, DataResult<AEKey> a) {
                     if (a instanceof DataResult.Error<AEKey> error) {
                         var missingContent = AEItems.MISSING_CONTENT.stack();
-                        var convert = ops.convertMap(NbtOps.INSTANCE, ops.createMap(input.entries()));
-                        if (convert instanceof CompoundTag compoundTag) {
-                            missingContent.set(AEComponents.MISSING_CONTENT_AEKEY_DATA, CustomData.of(compoundTag));
-                        }
-                        LOG.error("Failed to deserialize AE key: {}", error.message());
-                        missingContent.set(AEComponents.MISSING_CONTENT_ERROR, error.message());
 
                         return DataResult.success(
                                 AEItemKey.of(missingContent),
@@ -76,15 +67,6 @@ public abstract class AEKey {
                 public <T> RecordBuilder<T> coApply(DynamicOps<T> ops, AEKey input, RecordBuilder<T> t) {
                     // When the input is a MISSING_CONTENT item and has the original data attached,
                     // we write that back.
-                    if (AEItems.MISSING_CONTENT.is(input)) {
-                        var originalData = input.get(AEComponents.MISSING_CONTENT_AEKEY_DATA);
-                        if (originalData != null) {
-                            var originalDataMap = originalData.getUnsafe();
-                            for (var key : originalDataMap.getAllKeys()) {
-                                t.add(key, NbtOps.INSTANCE.convertTo(ops, originalDataMap.get(key)));
-                            }
-                        }
-                    }
 
                     return t;
                 }
@@ -234,34 +216,6 @@ public abstract class AEKey {
      */
     public int getFuzzySearchMaxValue() {
         return 0;
-    }
-
-    /**
-     * Tests if this and the given AE key are in the same fuzzy partition given a specific fuzzy matching mode.
-     */
-    public final boolean fuzzyEquals(AEKey other, FuzzyMode fuzzyMode) {
-        if (other == null || other.getClass() != getClass()) {
-            return false;
-        }
-
-        // For any fuzzy mode, the primary key (item, fluid) must still match
-        if (getPrimaryKey() != other.getPrimaryKey()) {
-            return false;
-        }
-
-        // If the type doesn't support fuzzy range search, it always behaves like IGNORE_ALL, which just ignores NBT
-        if (!supportsFuzzyRangeSearch()) {
-            return true;
-        } else if (fuzzyMode == FuzzyMode.IGNORE_ALL) {
-            return true;
-        } else if (fuzzyMode == FuzzyMode.PERCENT_99) {
-            return getFuzzySearchValue() > 0 == other.getFuzzySearchValue() > 0;
-        } else {
-            final float percentA = (float) getFuzzySearchValue() / getFuzzySearchMaxValue();
-            final float percentB = (float) other.getFuzzySearchValue() / other.getFuzzySearchMaxValue();
-
-            return percentA > fuzzyMode.breakPoint == percentB > fuzzyMode.breakPoint;
-        }
     }
 
     /**

@@ -24,8 +24,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforgespi.language.IModInfo;
 
 import appeng.client.Point;
@@ -62,7 +60,6 @@ import appeng.client.guidebook.render.GuidePageTexture;
 import appeng.client.guidebook.render.SimpleRenderContext;
 import appeng.client.guidebook.style.TextAlignment;
 import appeng.client.guidebook.style.TextStyle;
-import appeng.core.AEConfig;
 import appeng.core.AppEng;
 
 public class GuideScreen extends Screen {
@@ -247,7 +244,7 @@ public class GuideScreen extends Screen {
 
         guiGraphics.disableScissor();
 
-        if (AEConfig.instance().isShowDebugGuiOverlays()) {
+        if (Minecraft.getInstance().getDebugOverlay().showDebugScreen()) {
             renderHoverOutline(document, context);
         }
 
@@ -348,7 +345,8 @@ public class GuideScreen extends Screen {
         guiGraphics.blit(BACKGROUND_TEXTURE, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        NeoForge.EVENT_BUS.post(new ScreenEvent.BackgroundRendered(this, guiGraphics));
+        // TODO Replacement?
+//        NeoForge.EVENT_BUS.post(new ScreenEvent.BackgroundRendered(this, guiGraphics));
     }
 
     private void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
