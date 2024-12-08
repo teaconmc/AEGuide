@@ -2,6 +2,10 @@ package appeng.client.guidebook;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,7 +20,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -296,11 +307,37 @@ public final class Guide implements PageCollection {
             this.id = id;
         }
 
+        static final String apiBaseUrl = "https://wiki.teacon.cn/api/";
+        static final String shareId = "jiachen";
+        static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+        static final Gson GSON = new Gson();
+
         @Override
         protected Map<ResourceLocation, ParsedGuidePage> prepare(ResourceManager resourceManager,
                 ProfilerFiller profiler) {
             profiler.startTick();
             Map<ResourceLocation, ParsedGuidePage> pages = new HashMap<>();
+
+            HttpRequest listRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(apiBaseUrl + "documents.info"))
+                    .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(
+                            Map.of("apiVersion", 2, "shareId", shareId))))
+                    .header("Content-Type", "application/json")
+                    .build();
+            JsonObject listResponse;
+            try {
+                listResponse = JsonParser.parseString(HTTP_CLIENT.send(listRequest,
+                        HttpResponse.BodyHandlers.ofString()).body()).getAsJsonObject();
+            } catch (IOException | InterruptedException e) {
+                LOGGER.error("Failed to fetch guidebook page list", e);
+                return pages;
+            }
+            JsonObject rootNode = listResponse.get("data").getAsJsonObject().get("sharedTree").getAsJsonObject();
+            try {
+                fetchSharedTreeNode(shareId, rootNode, "", pages);
+            } catch (IOException e) {
+                LOGGER.error("Failed to fetch online pages from shareId {}", shareId, e);
+            }
 
             var resources = resourceManager.listResources(folder,
                     location -> location.getPath().endsWith(".md"));
@@ -320,6 +357,59 @@ public final class Guide implements PageCollection {
 
             profiler.endTick();
             return pages;
+        }
+
+        private int pageSeq = 0;
+
+        private void fetchSharedTreeNode(String sourceId, JsonObject node, String parent, Map<ResourceLocation, ParsedGuidePage> pages) throws IOException {
+            String id = node.get("id").getAsString();
+            String title = node.get("title").getAsString();
+
+            HttpRequest bodyRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(apiBaseUrl + "documents.info"))
+                    .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(
+                            Map.of("apiVersion", 2, "id", id, "shareId", shareId))))
+                    .header("Content-Type", "application/json")
+                    .build();
+            JsonObject bodyResponse;
+            try {
+                bodyResponse = JsonParser.parseString(HTTP_CLIENT.send(bodyRequest,
+                        HttpResponse.BodyHandlers.ofString()).body()).getAsJsonObject();
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+            String body = bodyResponse.get("data").getAsJsonObject().get("document").getAsJsonObject().get("text").getAsString();
+            String frontMatter = parent.isEmpty()
+                    ? String.format("""
+                    ---
+                    navigation:
+                      title: %s
+                      position: %d
+                    ---
+                    """, title, pageSeq)
+                    : String.format("""
+                    ---
+                    navigation:
+                      title: %s
+                      parent: %s.md
+                      position: %d
+                    ---
+                    """, title, parent, pageSeq);
+            pageSeq++;
+
+            String fullBody = String.format("%s\n# %s\n\n%s", frontMatter, title, body);
+            ResourceLocation pageId = ResourceLocation.fromNamespaceAndPath(sourceId, id + ".md");
+            try {
+                ParsedGuidePage page = PageCompiler.parse(sourceId, pageId, fullBody);
+                pages.put(pageId, page);
+            } catch (Exception ex) {
+                LOGGER.error("Failed to parse online page {}", pageId, ex);
+                return;
+            }
+
+            for (JsonElement childElem : node.get("children").getAsJsonArray()) {
+                fetchSharedTreeNode(sourceId, childElem.getAsJsonObject(), id, pages);
+            }
         }
 
         @Override

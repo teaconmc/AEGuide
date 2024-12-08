@@ -130,10 +130,10 @@ public final class PageCompiler {
         pageContent = pageContent.replaceAll("\\r\\n?", "\n");
 
         var options = new MdastOptions()
-                .withSyntaxExtension(MdxSyntax.INSTANCE)
+//                .withSyntaxExtension(MdxSyntax.INSTANCE)
                 .withSyntaxExtension(YamlFrontmatterSyntax.INSTANCE)
                 .withSyntaxExtension(GfmTableSyntax.INSTANCE)
-                .withMdastExtension(MdxMdastExtension.INSTANCE)
+                // .withMdastExtension(MdxMdastExtension.INSTANCE)
                 .withMdastExtension(YamlFrontmatterExtension.INSTANCE)
                 .withMdastExtension(GfmTableMdastExtension.INSTANCE);
 
