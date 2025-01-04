@@ -349,7 +349,7 @@ public class GuideNavBar extends AbstractWidget {
         private final NavigationNode node;
         private final LytParagraph paragraph = new LytParagraph();
         public final LytFlowSpan span;
-        private boolean expanded;
+        private boolean expanded = true;
         private final Row parent;
         private boolean hasChildren;
         public int top;

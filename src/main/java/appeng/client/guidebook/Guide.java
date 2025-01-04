@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.util.profiling.InactiveProfiler;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -746,5 +747,13 @@ public final class Guide implements PageCollection {
             evt.registerReloadListener(
                     new ReloadListener(ResourceLocation.fromNamespaceAndPath(defaultNamespace, folder)));
         });
+    }
+
+    public void reloadIfNoPages() {
+        if (pages == null || pages.isEmpty()) {
+            var reloader = new ReloadListener(ResourceLocation.fromNamespaceAndPath(defaultNamespace, folder));
+            pages = reloader.prepare(Minecraft.getInstance().getResourceManager(), InactiveProfiler.INSTANCE);
+            reloader.apply(pages, Minecraft.getInstance().getResourceManager(), InactiveProfiler.INSTANCE);
+        }
     }
 }

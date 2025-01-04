@@ -327,6 +327,7 @@ public final class PageCompiler {
                     .replace("\\n", "\n")
                     .replace("\\", " ")
             );
+            text.modifyStyle(style -> style.whiteSpace(WhiteSpaceMode.PRE));
             layoutChild = text;
         } else if (content instanceof MdAstInlineCode astCode) {
             var text = new LytFlowText();

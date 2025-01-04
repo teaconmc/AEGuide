@@ -147,6 +147,7 @@ public class AppEngClient extends AppEngBase {
     @Override
     public void openGuideAtPreviousPage(ResourceLocation initialPage) {
         try {
+            guide.reloadIfNoPages();
             var screen = GuideScreen.openAtPreviousPage(guide, PageAnchor.page(initialPage),
                     GlobalInMemoryHistory.INSTANCE);
 
@@ -159,6 +160,7 @@ public class AppEngClient extends AppEngBase {
     @Override
     public void openGuideAtAnchor(PageAnchor anchor) {
         try {
+            guide.reloadIfNoPages();
             var screen = GuideScreen.openNew(guide, anchor, GlobalInMemoryHistory.INSTANCE);
 
             openGuideScreen(screen);

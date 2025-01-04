@@ -209,7 +209,7 @@ class LineBuilder implements Consumer<LytFlowContent> {
         var fontScale = style.fontScale();
         var lineBuffer = new StringBuilder();
 
-        boolean lastCharWasWhitespace = Character.isWhitespace(lastChar);
+        boolean lastCharWasWhitespace = Character.isWhitespace(lastChar) && lastChar != '\n';
 
         for (var i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
@@ -239,7 +239,7 @@ class LineBuilder implements Consumer<LytFlowContent> {
 //                }
             }
 
-            if (Character.isWhitespace(codePoint)) {
+            if (Character.isWhitespace(codePoint) && codePoint != '\n') {
                 // Skip if the last one was a space already
                 if (lastCharWasWhitespace && style.whiteSpace().isCollapseWhitespace()) {
                     continue; // White space collapsing
