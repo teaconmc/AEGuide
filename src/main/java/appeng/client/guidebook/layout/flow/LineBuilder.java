@@ -204,18 +204,12 @@ class LineBuilder implements Consumer<LytFlowContent> {
     }
 
     private void iterateRuns(CharSequence text, ResolvedTextStyle style, char lastChar, LineConsumer consumer) {
-        int lastBreakOpportunity = -1;
-        float widthAtBreakOpportunity = 0;
         float curLineWidth = 0;
 
         var fontScale = style.fontScale();
         var lineBuffer = new StringBuilder();
 
         boolean lastCharWasWhitespace = Character.isWhitespace(lastChar);
-        // When starting after a whitespace on an existing line, we have a break opportunity at the start
-        if (lastCharWasWhitespace) {
-            lastBreakOpportunity = 0;
-        }
 
         for (var i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
@@ -233,17 +227,16 @@ class LineBuilder implements Consumer<LytFlowContent> {
 
             // Handle explicit line breaks
             if (codePoint == '\n') {
-                if (style.whiteSpace().isCollapseSegmentBreaks()) {
-                    codePoint = ' ';
-                } else {
+//                if (style.whiteSpace().isCollapseSegmentBreaks()) {
+//                    codePoint = ' ';
+//                } else {
                     consumer.visitRun(lineBuffer, curLineWidth, true);
                     lineBuffer.setLength(0);
-                    widthAtBreakOpportunity = curLineWidth = 0;
-                    lastBreakOpportunity = 0;
+                    curLineWidth = 0;
                     lastCharWasWhitespace = true;
                     remainingLineWidth = getAvailableHorizontalSpace();
                     continue;
-                }
+//                }
             }
 
             if (Character.isWhitespace(codePoint)) {
@@ -251,9 +244,6 @@ class LineBuilder implements Consumer<LytFlowContent> {
                 if (lastCharWasWhitespace && style.whiteSpace().isCollapseWhitespace()) {
                     continue; // White space collapsing
                 }
-                // Treat spaces as a safe-point for going back to when needing to line-break later
-                lastBreakOpportunity = lineBuffer.length();
-                widthAtBreakOpportunity = curLineWidth;
                 lastCharWasWhitespace = true;
             } else {
                 lastCharWasWhitespace = false;
@@ -262,26 +252,11 @@ class LineBuilder implements Consumer<LytFlowContent> {
             var advance = context.getAdvance(codePoint, style) * fontScale;
             // Break line if necessary
             if (curLineWidth + advance > remainingLineWidth) {
-                // If we had a break opportunity, use it
-                // In this scenario, the space itself is discarded
-                if (lastBreakOpportunity != -1) {
-                    consumer.visitRun(lineBuffer.subSequence(0, lastBreakOpportunity), widthAtBreakOpportunity, true);
-                    curLineWidth -= widthAtBreakOpportunity;
-                    lineBuffer.delete(0, lastBreakOpportunity);
-                    if (!lineBuffer.isEmpty() && Character.isWhitespace(lineBuffer.charAt(0))) {
-                        var firstChar = lineBuffer.charAt(0);
-                        lineBuffer.deleteCharAt(0);
-                        curLineWidth -= context.getAdvance(firstChar, style) * fontScale;
-                    }
-                } else {
-                    // We exceeded the line length, but did not find a break opportunity
-                    // this causes a forced break mid-word
-                    consumer.visitRun(lineBuffer, curLineWidth, true);
-                    lineBuffer.setLength(0);
-                    curLineWidth = 0;
-                }
-                lastBreakOpportunity = 0;
-                widthAtBreakOpportunity = curLineWidth;
+                // We exceeded the line length, but did not find a break opportunity
+                // this causes a forced break mid-word
+                consumer.visitRun(lineBuffer, curLineWidth, true);
+                lineBuffer.setLength(0);
+                curLineWidth = 0;
                 remainingLineWidth = getAvailableHorizontalSpace();
                 // If a white-space character broke the line, ignore it as it
                 // would otherwise be at the start of the next line
