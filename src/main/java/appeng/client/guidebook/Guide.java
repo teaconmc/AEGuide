@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import appeng.core.AppEng;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -308,7 +309,7 @@ public final class Guide implements PageCollection {
         }
 
         static final String apiBaseUrl = "https://wiki.teacon.cn/api/";
-        static final String shareId = "jiachen";
+        static final String shareId = "jiachen-tour-guide";
         static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
         static final Gson GSON = new Gson();
 
@@ -318,25 +319,27 @@ public final class Guide implements PageCollection {
             profiler.startTick();
             Map<ResourceLocation, ParsedGuidePage> pages = new HashMap<>();
 
-            HttpRequest listRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(apiBaseUrl + "documents.info"))
-                    .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(
-                            Map.of("apiVersion", 2, "shareId", shareId))))
-                    .header("Content-Type", "application/json")
-                    .build();
-            JsonObject listResponse;
-            try {
-                listResponse = JsonParser.parseString(HTTP_CLIENT.send(listRequest,
-                        HttpResponse.BodyHandlers.ofString()).body()).getAsJsonObject();
-            } catch (IOException | InterruptedException e) {
-                LOGGER.error("Failed to fetch guidebook page list", e);
-                return pages;
-            }
-            JsonObject rootNode = listResponse.get("data").getAsJsonObject().get("sharedTree").getAsJsonObject();
-            try {
-                fetchSharedTreeNode(shareId, rootNode, "", pages);
-            } catch (IOException e) {
-                LOGGER.error("Failed to fetch online pages from shareId {}", shareId, e);
+            if (!shareId.isEmpty()) {
+                HttpRequest listRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(apiBaseUrl + "documents.info"))
+                        .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(
+                                Map.of("apiVersion", 2, "shareId", shareId))))
+                        .header("Content-Type", "application/json")
+                        .build();
+                JsonObject listResponse;
+                try {
+                    listResponse = JsonParser.parseString(HTTP_CLIENT.send(listRequest,
+                            HttpResponse.BodyHandlers.ofString()).body()).getAsJsonObject();
+                } catch (IOException | InterruptedException e) {
+                    LOGGER.error("Failed to fetch guidebook page list", e);
+                    return pages;
+                }
+                JsonObject rootNode = listResponse.get("data").getAsJsonObject().get("sharedTree").getAsJsonObject();
+                try {
+                    fetchSharedTreeNode(shareId, rootNode, "", pages);
+                } catch (IOException e) {
+                    LOGGER.error("Failed to fetch online pages from shareId {}", shareId, e);
+                }
             }
 
             var resources = resourceManager.listResources(folder,
@@ -402,6 +405,9 @@ public final class Guide implements PageCollection {
             try {
                 ParsedGuidePage page = PageCompiler.parse(sourceId, pageId, fullBody);
                 pages.put(pageId, page);
+                if (pageSeq == 1) {
+                    pages.put(AppEng.makeId("index.md"), page);
+                }
             } catch (Exception ex) {
                 LOGGER.error("Failed to parse online page {}", pageId, ex);
                 return;

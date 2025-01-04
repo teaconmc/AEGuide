@@ -323,7 +323,10 @@ public final class PageCompiler {
         LytFlowContent layoutChild;
         if (content instanceof MdAstText astText) {
             var text = new LytFlowText();
-            text.setText(astText.value);
+            text.setText(astText.value
+                    .replace("\\n", "\n")
+                    .replace("\\", " ")
+            );
             layoutChild = text;
         } else if (content instanceof MdAstInlineCode astCode) {
             var text = new LytFlowText();
@@ -393,13 +396,17 @@ public final class PageCompiler {
         return link;
     }
 
+    private static final String ALT_IMG_PATH_PREFIX = "ae2guide/";
+
     @NotNull
     private LytImage compileImage(MdAstImage astImage) {
         var image = new LytImage();
         image.setTitle(astImage.title);
         image.setAlt(astImage.alt);
         try {
-            var imageId = IdUtils.resolveLink(astImage.url, pageId);
+            var imageId = astImage.alt.trim().startsWith(ALT_IMG_PATH_PREFIX)
+                    ? IdUtils.resolveLink(astImage.alt.trim().substring(ALT_IMG_PATH_PREFIX.length()), pageId)
+                    : IdUtils.resolveLink(astImage.url, pageId);
             var imageContent = pages.loadAsset(imageId);
             if (imageContent == null) {
                 LOGGER.error("Couldn't find image {}", astImage.url);
